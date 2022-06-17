@@ -1,0 +1,805 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id=""
+                  title=""
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="座学" duration="0">
+        <p class="image-container"><img style="width: 624.00px" src="img\\e9ab8c336a533e89"></p>
+<p>今回のハンズオンでは、昨年re:Invent 2021で発表された「AWS IoT TwinMaker」について解説、ハンズオンを実施します。</p>
+<p>本資料については、Amazon Web Services Japan 飯田 裕太様がYoutubeへ公開しているDeep Diveによる解説、及びAWS様の公開されているクッキー工場のデモを利用して解説します。</p>
+<p>(そのためSNSなどによる本資料の共有はお控え下さい)</p>
+<p><strong>引用元(座学)：サービスアップデート IoT 編: AWS IoT TwinMaker Deep Dive</strong></p>
+<p><a href="https://www.youtube.com/watch?v=GciLDyvUSxQ" target="_blank"><strong>https://www.youtube.com/watch?v=GciLDyvUSxQ</strong></a></p>
+<p><strong>引用元(ハンズオン)：AWS IoT TwinMaker Getting Started</strong></p>
+<p><a href="https://github.com/aws-samples/aws-iot-twinmaker-samples" target="_blank"><strong>https://github.com/aws-samples/aws-iot-twinmaker-samples</strong></a></p>
+<h2 is-upgraded>デジタルツインについて</h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\599b79836b64c473"></p>
+<p>AWS IoT TwinMaker は実世界のモノ、データを仮想空間内で 3 次元的に可視化するために使い、デジタルツインを実現するサービスとなります。</p>
+<p>デジタルツインとは、物理的なシステムをデジタル空間上に仮想的に表現したもので、実世界のデータによって定期的に更新され、システムの構造、状態、動作を模倣し、ビジネスの成果を促進するために使用されるものです。</p>
+<p>つまり、実世界のシステムをデジタル空間上に表現して実世界のデータを反映し、デジタル世界における実世界のレプリカとして構築、保全、運用していくものになります。</p>
+<h2 is-upgraded><strong>デジタルツインの利用用途について</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\6c1c81923ca4e6b0"></p>
+<p>具体的な用途として、いくつか例があります。</p>
+<p>①ルーチンメンテナンスの最適化</p>
+<p>施設のバーチャルウォークスルーを利用して、機器のメンテナンス作業を迅速かつ遠隔で行う</p>
+<p>②プラントオペレーションの改善</p>
+<p>物理的な環境の状況に応じて、機器や操作上のアラートをデジタル上から容易に特定</p>
+<p>③プロセス効率の向上</p>
+<p>プロセスデータを機械学習などの高度な分析に接続し、機器のパラメータを予測・調整して廃棄物を最小限に抑える</p>
+<p>④環境全体の可視化</p>
+<p>建物や設備の関わる様々なデータ、情報、インサイトを単一の包括的なリアルタイム3Dビューに統合</p>
+<h2 is-upgraded><strong>デジタルツインの利用用途について</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\88cf4c0602336c56"></p>
+<p>デジタルツインを利用する事で、特に産業分野での成果が期待する事が出来ます。</p>
+<p>生産と資産の最適化、品質管理の自動化、労働者の安全と生産性の向上、サプライチェーンにおける効果が見込めます。</p>
+<h2 is-upgraded><strong>デジタルツインの構築が難しい理由について</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\d13bdf0b8911bf82"></p>
+<p>デジタルツインの構築が難しい理由として、以下があります。</p>
+<p>・様々な形式のデータ、異なるデータソースを準備する必要がある</p>
+<p>・資産のライフサイクル全体にわたるモデリングが必要</p>
+<p>・効果的なビジュアライゼーションの作成が必要</p>
+<h2 is-upgraded><strong>AWS IoT TwinMakerでデジタルツインを実現</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\df2fb0f1982800f3"></p>
+<p>それらの課題を解決する為に「AWS IoT TwinMaker」が発表されました。</p>
+<p>「AWS IoT TwinMaker」では、実世界のデジタルツインをより早く、より簡単に作成する事が出来ます。</p>
+<p>特徴としては以下になります。</p>
+<p>・異なるデータソースに簡単にアクセス可能</p>
+<p>・実世界の環境を正確にモデリング可能</p>
+<p>・臨場感あふれる3Dビューを実現</p>
+<p>これらの機能を用いる事でデジタルツインを実現する事が可能となります。</p>
+<h2 is-upgraded><strong>AWS IoT TwinMakerの主な仕組みについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\d4dc1c521a8e1081"></p>
+<p>AWS IoT TwinMakerでは、上記画像のような様々なデータを取り込みます。</p>
+<p>これらのデータをAWS IoT TwinMakerを通して、3Dのモデルを組み合わせてユーザ側にデジタルツインとして描画、提供を行います。</p>
+<h2 is-upgraded><strong>AWS IoT TwinMakerの主な仕組みについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\6d0e9859b481ae00"></p>
+<p>AWS IoT TwinMakerでは4つの主な機能が実装されています。</p>
+<p>①データコネクタ</p>
+<p>②モデルビルダー</p>
+<p>③シーンコンポーザー</p>
+<p>④アプリケーション</p>
+<p>詳細については次から説明を実施します。</p>
+<h2 is-upgraded><strong>データコネクタについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\18a366ffb3291664"></p>
+<p>データコネクタはデータの接続詞としての機能を提供しています。</p>
+<p>IoTセンサーデータ、動画、ドキュメント、アプリケーションデータなど、異なるデータを統合して利用する事が出来ます。</p>
+<p>また、データを移動することなく、AWS IoT TwinMakerから既存のデータソースに接続して参照、利用する事が出来ます。</p>
+<p>これらの機能を使ってデータを収集して3Dモデルと関連付けを行っていきます。</p>
+<h2 is-upgraded><strong>モデルビルダーについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\2d01503308df8a2d"></p>
+<p>モデルビルダーは現実世界の設備等をデジタル空間上に設定していくための機能になっています。</p>
+<p>モデルのエンティティ情報の設定、モデル間のデータの関連付け、実際のデータとの接続、それらをモデルビルダーで設定して現実世界の設備等をデジタル空間に取り込んでいきます。</p>
+<h2 is-upgraded><strong>シーンコンポーザーについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\9a551a09e7ba11d5"></p>
+<p>シーンコンポーザーでは3Dのビジュアルを構築するための機能を提供しています。</p>
+<p>オープンソースのgLTFファイルに対応し、このファイルから3Dのデータを読み込んで実際のシーンとして構成していきます</p>
+<p>作ったシーンではデータやアラートなどを3Dビューアーに重ねて表示することが出来るので物理的な世界でおこなった事を視覚的にこの3D空間の中で表現していくことが可能です。</p>
+<h2 is-upgraded><strong>アプリケーションについて</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\e252474ab27c6105"></p>
+<p>次にアプリケーションです。アプリケーション自体をIoT TwinMakerで提供しているわけではなくてプラグインやSDKとしてアプリケーションへの接続機能が利用出来ます。標準としてGrafana向けのローコードプラグインが用意されています。</p>
+<h2 is-upgraded><strong>AWS IoT TwinMakerでできること</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\973541816f06ab4f"></p>
+<p>①物理システムをモデル化し、部品間の関係を表現</p>
+<p>②別のデータストアを作成することなく、様々なソースからデータを取得</p>
+<p>③3Dによる魅力的なビジュアライゼーションの実現</p>
+<p>④オペレーターが使用するウェブアプリケーションの公開</p>
+<h2 is-upgraded><strong>AWS IoT TwinMakerの構築の流れ</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\403cb2e81f69b4f"></p>
+<p>①ワークスペースを作成</p>
+<p>②エンティティコンポーネントをモデリングします</p>
+<p>③ストリーミングインサイト追加を行い</p>
+<p>④3Dモデルシーンの構築を行います</p>
+<p>⑤Webアプリケーションへの統合を行う</p>
+<p>これらの手順を行う事でデジタルツインのシステムが完成します。</p>
+<h2 is-upgraded><strong>Step 1：ワークスペースの作成</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\cfa56bac8a79929f"></p>
+<p>ワークスペースの作成について、ワークスペースとはいわゆる箱のようなもので、デジタルツインの作成に必要なすべてのリソースを入れるための枠になっています。</p>
+<p>この枠を分けていただくことでセキュリティ的な境界線としても機能します。</p>
+<p>1つのデジタルツインを作るにあたって分ける必要があるリソース、他のデジタルツインのリソースを別のワークスペースに分けることでで他のリソースに影響を与える事を防ぐ事も可能になります。</p>
+<h2 is-upgraded><strong>Step 2：モデリング</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\5db3ee4e61227b8c"></p>
+<p>ワークスペースの作成後に行うのがこの2番目のステップで、モデリングを行います。</p>
+<p>このモデリングと言うというのは以下の2つの要素から構成されています</p>
+<p>①エンティティ：物理的な設備等をデジタル上で表現したもの</p>
+<p>②コンポーネント：データストアへのコネクタ</p>
+<p>物理的な設備や物のデータをエンティティとして設定して、コンポーネントを数字でデータコネクターからデータを取得します。このような設定を行うことで、モデリングとしてモノをデジタル上に表現してデータにつなげるといったことが可能になっています。</p>
+<h2 is-upgraded><strong>Step 3：ストリーミングインサイトの追加</strong></h2>
+<h2 is-upgraded><img style="width: 624.00px" src="img\\ad6c71c58473d9b6"></h2>
+<p>Step3ではストリーミングインサイトの追加となります。</p>
+<p>・時系列データに情報を追加し、充実させる</p>
+<p>・分析エンジンによるインサイトの追加</p>
+<p>・結果をデータストアに戻す</p>
+<p>これらの収集したデータをSageMakerなどのML系の分析にて新しい情報や新しい洞察を加えて表示することにより、効率的なデータの活用につながります。</p>
+<h2 is-upgraded><strong>Step 4：ビジュアルシーンの作成</strong></h2>
+<h2 is-upgraded><img style="width: 624.00px" src="img\\d0d68508a610faac"></h2>
+<p>ステップ4ではビジュアルシーンを作成します。まさにこれが今回の中核の機能になります。</p>
+<p>3Dモデルを配置して3Dのシーンを作成していきます。こちらでは標準的な GLTFファイルによるインポーターを行います。GLTFファイルとは、オープンソースの3D形状/シーンを格納するファイルフォーマットです。それをAWS IoT TwinMakerの上に配置して3Dの世界を作る事が可能です。そしてこのビジュアルシーンの中でデータとの組み合わせも設定してこの3Dモデルが現実のレプリカとして活動できるように設定を加えていきます。</p>
+<h2 is-upgraded><strong>Step 5：Webアプリケーションの作成</strong></h2>
+<p class="image-container"><img style="width: 624.00px" src="img\\62c2d5927c250951"></p>
+<p>そして最後に作り上げた3Dシーンをオペレータ用のカスタムダッシュボードとして、Webアプリケーションに統合するといった形になっています。これらの流れがIoT TwinMakerの構成の流れになります。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ハンズオン" duration="0">
+        <h2 is-upgraded><strong>AWS IoT TwinMaker ハンズオンについて</strong></h2>
+<p>それでは、実際に AWS Iot TwinMaker のハンズオンを実施していきたいと思います。</p>
+<p>AWS社が公開している以下のハンズオンサイトを参考に資料を作成しました。</p>
+<p>ハンズオンで使用する資材も配置されているので、アクセスしてください。</p>
+<p><a href="https://github.com/aws-samples/aws-iot-twinmaker-samples" target="_blank">https://github.com/aws-samples/aws-iot-twinmaker-samples</a></p>
+<h2 is-upgraded><strong>AWSマネジメントコンソールへのログイン</strong></h2>
+<p><a href="https://console.aws.amazon.com/" target="_blank">https://console.aws.amazon.com</a> にブラウザでアクセスして、</p>
+<p>アカウントID12桁、ユーザ名、パスワードでログインして下さい。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\a4dc7a53baf24c00"></p>
+<p>サインインするとホーム画面が表示されます。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール ホーム画面" style="width: 624.00px" src="img\\360b910866c6647b"></p>
+<p>左上の AWS アイコンをクリックするとホームに戻ります。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール ホーム画面 - ホーム" style="width: 624.00px" src="img\\d492d116952953d4"></p>
+<p>サービスをクリックすると、EC2 や RDS といった各種 AWS サービス名へのリンクにアクセスできます。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール ホーム画面 - サービス" style="width: 624.00px" src="img\\4415c30de8e351ca"></p>
+<p>テキストボックスにサービス名を入力することで候補が表示されるので便利です。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール ホーム画面 - テキスト検索ボックス" style="width: 624.00px" src="img\\863b1ad0ced8d09b"></p>
+<h2 is-upgraded><strong>リージョンの変更 (バージニア北部)</strong></h2>
+<p>IoT TwinMaker は 2022 年現在、以下 3 つのリージョンでのみ利用可能ですが、本ハンズオンではコマンドの入力ミスなどを防ぐためバージニア北部にて統一させていただきます。</p>
+<ul>
+<li>米国東部（バージニア州北部）（us-east-1）</li>
+<li>US West（オレゴン）（us-west-2）</li>
+<li>ヨーロッパ（アイルランド）（eu-west-1）</li>
+</ul>
+<p>マネジメントコンソールにログイン後、右上のカーソルからリージョンを</p>
+<p>[米国東部(バージニア北部)] に変更してください。</p>
+<h2 is-upgraded><img style="width: 624.00px" src="img\\7eba428166aba528"></h2>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="VPC" duration="0">
+        <h2 is-upgraded>VPCの作成</h2>
+<p>AWS IoT TwinMaker のハンズオンを開始するにあたり、Cloud9 の環境を作成する必要があります。Cloud9 の手順に移る前に VPC を作成します。(これまでのハンズオンで作成済の場合は必要ありませんが、念のため記載しておきます)</p>
+<h2 is-upgraded><strong>VPC コンソールにアクセス</strong></h2>
+<h3 is-upgraded><strong>VPC コンソール</strong></h3>
+<p>左上の [<strong>サービス</strong>] ボタンをクリックして、表示されたメニューから [<strong>ネットワーキングとコンテンツ配信</strong>] をクリックし、表示された [<strong>VPC</strong>] を選択します。</p>
+<p>VPC コンソールに画面遷移します。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\366e3a210703c49b"></p>
+<h2 is-upgraded><strong>VPC ウィザードで VPC コンポーネントを作成する</strong></h2>
+<p>VPC コンソールが表示されたら、[ <strong>VPC ウィザードを起動 </strong>] ボタンをクリックしてください。</p>
+<p>(Create VPCとなっている場合はそちらを選択してください)</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\f89e2003ff5312eb"></p>
+<h2 is-upgraded><strong>VPC ウィザード - 全貌</strong></h2>
+<p>VPC ウィザードは文字通り、画面の手順に沿ってクリックして進めていくと VPC が構築できる便利なウィザード機能です。</p>
+<p>以前は画面が遷移していく形でしたが、2022年4月現在はリニューアルして 1 ページで収まらないほど大きな画面になりました。全貌は以下の画像の通りですが、順番に設定していきます。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\60165b219bb29bba"></p>
+<p>まず 作成するリソース は [ <strong>VPC、サブネットなど</strong>] を選択します。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\2a7d7f7d32b93ed5"></p>
+<h2 is-upgraded><strong>VPC ウィザード - 名前タグ</strong></h2>
+<p>次に、名前タグを設定します。テキストボックスに入力された「プロジェクト」を消して、「handsonyyyymmdd (今日の日付)」などの名前を入力してみてください。</p>
+<p>右側に表示された VPC やサブネット、ルートテーブル、インターネットゲートウェイ、エンドポイントなどの名前タグが動的に設定されます。</p>
+<p>以前のウィザードでは手入力だったので便利になりました。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\8f88d3ab5bfccdea"></p>
+<h2 is-upgraded>VPC ウィザード - IPv4 CIDR ブロック</h2>
+<p>デフォルトで入力されている「10.0.0.0/16」のまま、次に進んでください。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\9a9386f6efe57a26"></p>
+<h2 is-upgraded><strong>VPC ウィザード - アベイラビリティーゾーン</strong></h2>
+<p>アベイラビリティーゾーンは 1 で十分ですが、別のハンズオンなどで既に作成済みの方で、2つ以上の AZ を作成されている方も作り直す必要はありません。</p>
+<p>本ハンズオンでは、単一の AZ を利用します。</p>
+<p class="image-container"><img style="width: 488.00px" src="img\\729fce437777a809"></p>
+<p>本ハンズオンでは、パブリックサブネットを 1 つ作ります。設定値は以下になります。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>Public／Private</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>AZ</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>CIDR</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Public</p>
+</td><td colspan="1" rowspan="1"><p>us-east-1a</p>
+</td><td colspan="1" rowspan="1"><p>10.0.0.0/24</p>
+</td></tr>
+</table>
+<p>[ <strong>▼ サブネット CIDR ブロックをカスタマイズ</strong> ] をクリックして展開して、10.0.0.0/24 に変更してください。</p>
+<p class="image-container"><img style="width: 461.00px" src="img\\94efcffd8c51c616"></p>
+<h2 is-upgraded><strong>VPC ウィザード - NAT ゲートウェイ、VPC エンドポイント</strong></h2>
+<p>NAT ゲートウェイは利用しません。</p>
+<p>VPC エンドポイントも今回は利用しないので なし にしてください。</p>
+<p>DNS オプションはどちらもチェックを入れてください。</p>
+<p>[ <strong>VPC を作成 </strong>] ボタンをクリックしてください。</p>
+<p class="image-container"><img alt="AWS マネジメントコンソール サインイン画面" style="width: 624.00px" src="img\\ca25ed25f658b57f"></p>
+<p>VPC が作成されたら全てが成功となっている事を確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\afe6089aa16f5b1b"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AWS Cloud9" duration="0">
+        <h2 is-upgraded><strong>AWS Cloud9 環境の作成</strong></h2>
+<p>AWS IoT TwinMaker の環境を作成するために、AWS Cloud9 を作成します。</p>
+<p>検索ウィンドウに「Cloud9」と入力して、サービスから [ <strong>Cloud9</strong> ] を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\3d8426cf5a5c29b1"></p>
+<h3 is-upgraded><strong>Cloud9 コンソール</strong></h3>
+<p>AWS Cloud9の画面に遷移しますので、[ <strong>Create enviroment</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\1b3f7a0be7744d03"></p>
+<p>Nameに [ IoT TwinMaker Development ]と入力し、[ <strong>Next step</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\13a7f47effc0eddf"></p>
+<p>[ <strong>Configure settings</strong> ] の画面に遷移するので、以下の設定を変更します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>項目</strong></p>
+</td><td colspan="2" rowspan="1"><p><strong>メモ</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>インスタンスタイプ</p>
+</td><td colspan="2" rowspan="1"><p>t3.small (2 GiB RAM + 2 vCPU)</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>VPC</p>
+</td><td colspan="2" rowspan="1"><p>先ほどの手順にて作成した VPC を指定</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>サブネット</p>
+</td><td colspan="2" rowspan="1"><p>パブリックサブネットを指定</p>
+</td></tr>
+</table>
+<aside class="warning"><p><strong>t2.micro は無料枠にてお使いいただけますが、処理に失敗するケースがあるため、t3.small で作業を進めていただきますようお願いします。</strong></p>
+</aside>
+<p class="image-container"><img style="width: 624.00px" src="img\\f7d21bb9d02ea6ad"></p>
+<p>[ <strong>▼ Network settings (advanced)</strong> ] をクリックして展開し、先ほど作成した VPC とパブリックサブネットを指定してください。設定ができたら、[ <strong>Next step</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\ef8eb44d5ca14889"></p>
+<p>確認画面が表示されるので、[ <strong>Create environment</strong> ]をクリックして、Cloud9 環境を作成してください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\5664d379514ceb65"></p>
+<p>Cloud9 環境のデプロイが終わるまで少し時間がかかりますので、画面が切り替わるまでお待ち下さい。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\3383be81d499fe33"></p>
+<h2 is-upgraded><strong>AWS Cloud9 の設定 - セキュリティグループの変更</strong></h2>
+<p>Cloud9 のデプロイが完了するまで少し時間がかかりますので、EC2 コンソールに移動してください。以下のリンクをクリックすると、EC2 コンソールが開きます。</p>
+<p><strong>EC2 コンソール - インスタンス</strong></p>
+<p><a href="https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances:instanceState=running" target="_blank">https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#Instances</a></p>
+<aside class="special"><p><strong>既に Cloud9 デプロイが完了された方は、下記の手順の通り [ Go To Your Dashbord ] マネジメントコンソールに戻ることができます。</strong></p>
+</aside>
+<p>Cloud9 画面右上の 雲のアイコンをクリックして、[ <strong>Go To Your Dashboard</strong> ] を選択します。</p>
+<p>(Cloud9 のデプロイが終わった方向けの操作になります。デプロイ中の場合はスキップしてください。)</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\1146f7ced11f1d57"></p>
+<p>検索ウィンドウから「EC2」と入力して、[ <strong>EC2 ]</strong> をクリックします。</p>
+<p>(Cloud9 のデプロイが終わった方向けの操作になります。デプロイ中の場合はスキップしてください。)<br></p>
+<p class="image-container"><img style="width: 624.00px" src="img\\6992ebd2659fa0e5"></p>
+<h3 is-upgraded><strong>EC2 コンソール</strong></h3>
+<p>インスタンスの一覧画面に戻ります。</p>
+<aside class="special"><p><strong>Cloud9 インスタンスの Name タグは、[ aws-cloud9〜 ] と設定されています。</strong></p>
+</aside>
+<p>Cloud9 インスタンスのチェックボックスにチェックを入れると、ページ下部に表示される詳細ペインが表示されます。</p>
+<p>[ <strong>セキュリティ</strong> ] タブをクリックして、次に、今あなたがいらっしゃる場所からブラウザを通じて閲覧できるように http ポートを開放します。</p>
+<p>セキュリティグループ名をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\525c96765a684d8b"></p>
+<p>セキュリティグループの画面に遷移しますので、下部のペインに表示された [ <strong>インバウンドルールを編集</strong> ] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\f3e881badd5181bb"></p>
+<p>[ <strong>インバウンドルールのルールを編集</strong> ] 画面に遷移するので、[ <strong>ルールの追加</strong> ]ボタンをクリックして 1 行追加します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>タイプ</strong></p>
+</td><td colspan="2" rowspan="1"><p><strong>ソース</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>HTTP</p>
+</td><td colspan="2" rowspan="1"><p>マイ IP</p>
+</td></tr>
+</table>
+<p>※プロキシを利用している方はマイIPでは無く、プロキシのIPを指定下さい</p>
+<p>追加したら [ルールを保存] ボタンをクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\855f97d5210bf581"></p>
+<h2 is-upgraded><strong>AWS Cloud9 の設定 (EBS ボリュームの拡張)</strong></h2>
+<p>Cloud9 のストレージは 10GiB が割り当てられていますが、作業中に空き容量が枯渇してエラーになります。そのため、事前に EBS のボリュームを10GiB から 20GiB に拡張しておきます。</p>
+<p>その際にGP2ストレージからGP3ストレージに変更します。</p>
+<p>[ <strong>ストレージ</strong> ] タブから [ <strong>ボリューム ID</strong> ] のリンクをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\515009003fe4ba20"></p>
+<p>[ <strong>インスタンス</strong> ] ページから、[ <strong>ボリューム</strong> ] ページに画面遷移します。</p>
+<p>対象の EBS ボリュームにチェックを入れて、[ <strong>アクション</strong> ] から [ <strong>ボリュームの変更</strong> ] をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\db6eb23a0882"></p>
+<p>[ <strong>ボリュームの変更画面</strong> ] にて以下項目を変更して、[ <strong>変更ボタン</strong> ] をクリックします。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>ボリュームタイプ</strong></p>
+</td><td colspan="2" rowspan="1"><p><strong>サイズ (GiB)</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>IOPS</strong></p>
+</td><td colspan="1" rowspan="1"><p><strong>スループット</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>汎用 SSD (gp3) → </p>
+</td><td colspan="2" rowspan="1"><p>10 → 20</p>
+</td><td colspan="1" rowspan="1"><p>3000</p>
+</td><td colspan="1" rowspan="1"><p>125</p>
+</td></tr>
+</table>
+<p class="image-container"><img style="width: 624.00px" src="img\\73322716185f1cf9"></p>
+<p>確認画面がポップアップするので [ <strong>変更</strong> ] ボタンをクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\966445dc8320b1d8"></p>
+<p>ボリュームの状態が緑色で利用可能になるまで、時間が掛かるので、使用中になるのをお待ち下さい。<strong>(10分程度時間が掛かるので、少しご歓談下さい)</strong></p>
+<p class="image-container"><img style="width: 624.00px" src="img\\6deac9f6dcc8c9ce"></p>
+<p>ボリュームの状態が使用中(緑色)になった事を確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\1a379e1e9a038564"></p>
+<h2 is-upgraded>Cloud9 にてストレージの拡張を認識させる</h2>
+<p>EC2 コンソールにて 10GiB → 20GiB の EBS ストレージ拡張作業を行いましたが、Cloud9 はまだ 10GiB で認識しています。</p>
+<p>Cloud9のEC2インスタンスを再起動して、ストレージの拡張をOSに認識させます。</p>
+<p>[EC2]を開き、[インスタンス]から対象のEC2インスタンスを選択し、</p>
+<p>[インスタンスの状態]から[インスタンスを再起動]を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\a5cd188f077660f9"></p>
+<p>ポップアップが出てくるので、[再起動]をクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\cf698daaebeb2074"></p>
+<h3 is-upgraded><strong>Cloud9 コンソール</strong></h3>
+<p>改めて、Cloud9のコンソールを開きます。</p>
+<p>df -h コマンドで 20G に変更されたことを確認します。</p>
+<pre><code>$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+devtmpfs        970M     0  970M   0% /dev
+tmpfs           978M     0  978M   0% /dev/shm
+tmpfs           978M  492K  977M   1% /run
+tmpfs           978M     0  978M   0% /sys/fs/cgroup
+/dev/nvme0n1p1   20G  8.2G   12G  41% /
+tmpfs           196M     0  196M   0% /run/user/1000
+tmpfs           196M     0  196M   0% /run/user/0
+$ </code></pre>
+<h2 is-upgraded><strong>Cloud9 にて IAM ロールが認識されているか確認する</strong></h2>
+<p>IAM インスタントプロフィールロールをアタッチした直後は、クレデンシャルがキャッシュさ</p>
+<p>れて aws コマンドが正しく実行できない可能性があります。</p>
+<p>Cloud9 のターミナルで、次のコマンドを実行して、環境にawscli資格情報があり、適切に構成されていることを確認してください。（エラーは表示された場合は、トラブルシューティングのページを確認してください。）</p>
+<pre><code>aws sts get-caller-identity
+以下が表示される事</code></pre>
+<p>{</p>
+<p>&#34;Account&#34;: &#34;XXXXXX&#34;,</p>
+<p>&#34;UserId&#34;: &#34;XXXXXXX:xxxxx&#34;,</p>
+<p>&#34;Arn&#34;: &#34;arn:aws:sts::XXXXXXXXXXXXX:assumed-role/AdminSwitchRole/xxxxx&#34;</p>
+<p>}</p>
+<h2 is-upgraded><strong>環境変数の設定</strong></h2>
+<p>本ハンズオンで利用する環境変数をいくつか設定していきます。この作業は Cloud9 を再起動すると再設定が必要です。</p>
+<p>まず、Github から資材をダウンロードします。</p>
+<pre><code>git clone https://github.com/aws-samples/aws-iot-twinmaker-samples</code></pre>
+<p>そして、ダウンロードしたディレクトリに移動してください。</p>
+<pre><code>cd aws-iot-twinmaker-samples/</code></pre>
+<p>各環境変数を設定していきます。全てコピーで貼り付けで問題ありません。</p>
+<pre><code>GETTING_STARTED_DIR=$(pwd)
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity | grep &#34;Account&#34; | awk -F&#39;&#34;&#39; &#39;{print $4}&#39;)
+CDK_DEFAULT_ACCOUNT=$AWS_ACCOUNT_ID
+INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed &#39;s/\(.*\)[a-z]/\1/&#39;)
+export TIMESTREAM_TELEMETRY_STACK_NAME=CookieFactoryTelemetry
+export WORKSPACE_ID=CookieFactory</code></pre>
+<p>以下コマンドを実行して、コマンド結果が、右と左の値が正しく出力されることを確認してください。</p>
+<pre><code>cat &lt;&lt; END
+  # 1. $GETTING_STARTED_DIR = &#34;/home/ec2-user/environment/aws-iot-twinmaker-samples&#34;
+  # 2. $AWS_ACCOUNT_ID = &#34;数字 12 桁の ID&#34; 
+  # 3. $CDK_DEFAULT_ACCOUNT = $AWS_ACCOUNT_ID
+  # 4. $INSTANCE_ID = &#34;i-XXXXXXXXXXX の値&#34;
+  # 5. $AWS_DEFAULT_REGION = &#34;us-east-1&#34; 
+  # 6. $WORKSPACE_ID = &#34;CookieFactory&#34;
+  # 7. $TIMESTREAM_TELEMETRY_STACK_NAME = &#34;CookieFactoryTelemetry&#34;
+END</code></pre>
+<p>Cloud9のbashターミナルで、次のコマンドを実行します</p>
+<p>OpenCVとjqの依存関係をインストールします</p>
+<pre><code>sudo yum install mesa-libGL jq -y</code></pre>
+<p>pipのインストールを実施します。</p>
+<pre><code>sudo python3 -m pip install --upgrade pip</code></pre>
+<p>AWS CLIをアップグレードし、1.22以降のバージョンである事を確認する。</p>
+<pre><code>sudo pip3 install awscli --ignore-installed docutils --force-reinstall --upgrade &amp;&amp; source ~/.bashrc &amp;&amp; aws --version</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="AWS IoT TwinMaker" duration="0">
+        <h2 is-upgraded><strong>事前準備</strong></h2>
+<p>AWS IoT TwinMakerの利用がCloud9上で出来るようになりましたので、以下の事前準備のコマンドを実施します。</p>
+<p>まず、Cloud9上でサンプルコードのGit Cloneを実施してサンプルコードを展開します。</p>
+<p>セットアップが完了したら、次のコマンドを使用してアクセスをテストします。</p>
+<pre><code>aws iottwinmaker list-workspaces --region $AWS_DEFAULT_REGION</code></pre>
+<p><code>以下が表示される事</code></p>
+<pre><code>{
+    &#34;workspaceSummaries&#34;: []
+}</code></pre>
+<p>Pythonのバージョンを確認し、3.7以降である事を確認します。</p>
+<pre><code>python3 --version</code></pre>
+<p>Node.jsとNPMのバージョンを確認します。Node.jsはv14.18.1以降、NPMはバージョン6.14.15以降である事を次のコマンドを使用して確認します。</p>
+<pre><code>node --version
+npm --version</code></pre>
+<p>CDKのバージョンを1.14以降である事を確認します。</p>
+<pre><code>cdk --version</code></pre>
+<p>また、サンプルのLambda関数などのカスタムアセットを簡単にデプロイできるように、CDKのアカウントをブートストラップする必要があります。次のコマンドを使用します。</p>
+<pre><code>cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION</code></pre>
+<p>Dockerのバージョンが20以降である事を確認します。</p>
+<pre><code>docker --version</code></pre>
+<p>次のコマンドを使用して、ECRへのレジストリに対して認証を行い、</p>
+<p>「Login Succeeded」が表示される事を確認する。</p>
+<pre><code>aws ecr-public get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin public.ecr.aws</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="サンプルクッキー工場の作成の準備" duration="0">
+        <p>ここからの手順ではサンプルクッキー工場の作成を実施していきます。</p>
+<p>サンプルディレクトリのソース配下に移動します。</p>
+<pre><code>cd ~/environment/aws-iot-twinmaker-samples </code></pre>
+<p>Pythonの依存関係を整理します。</p>
+<p>依存関係をチェックする為、以下のコマンドを叩きます。</p>
+<pre><code>pip check  
+～～～～～結果～～～～～～
+boto3 1.21.40 has requirement botocore&lt;1.25.0,&gt;=1.24.40, but you have botocore 1.27.9.
+boto3 1.21.40 has requirement s3transfer&lt;0.6.0,&gt;=0.5.0, but you have s3transfer 0.6.0.</code></pre>
+<aside class="special"><p><strong>No broken requirements found. が表示された方は依存関係は問題ありません。</strong></p>
+</aside>
+<p>依存関係を整理する為、バージョンを確認します。</p>
+<p>boto3とbotocoreのバージョンのLatestを確認します。</p>
+<pre><code>pip list -o
+～～～～～結果～～～～～～
+Package       Version  Latest   Type
+------------- -------- -------- -----
+boto3         1.21.40  1.24.9   wheel
+botocore      1.24.40  1.27.9   wheel</code></pre>
+<p>以下のコマンドでboto3のバージョンを1.24.9にバージョンアップします。</p>
+<pre><code> pip3 install boto3==1.24.9</code></pre>
+<p>以下のコマンドでbotocoreのバージョンを1.27.9にバージョンアップします。</p>
+<pre><code> pip3 install botocore==1.27.9</code></pre>
+<p>以下のコマンドで依存関係が解消されたことを確認します。</p>
+<pre><code> pip check
+No broken requirements found.</code></pre>
+<p>以下のコマンドで「requirement.txt」を更新します。</p>
+<pre><code>vim $GETTING_STARTED_DIR/src/workspaces/cookiefactory/requirements.txt
+
+boto3==1.24.9 ←1.24.9に変更する
+requests==2.26.0
+opencv-python==4.5.3.56
+
+:wq で保存してviを抜ける</code></pre>
+<p>Pythonを使用して、CookieFactoryのサンプルデータをデプロイします。</p>
+<p>次のコマンドを使用して、必要なPythonライブラリをインストールします。</p>
+<pre><code>pip3 install -r $GETTING_STARTED_DIR/src/workspaces/cookiefactory/requirements.txt</code></pre>
+<p>IoT TwinMaker実行ロールを作成する</p>
+<p>さまざまなデジタルツインアプリケーションがさまざまなリソースを使用します。次のコマンドを実行して、このサンプルアプリケーションに必要な権限を持つワークスペースの実行ロールを作成します。次のステップでワークスペースを作成するときに、ロール名を使用することに注意してください。</p>
+<pre><code>python3 $GETTING_STARTED_DIR/src/workspaces/cookiefactory/setup_cloud_resources/create_iottwinmaker_workspace_role.py --region $AWS_DEFAULT_REGION</code></pre>
+<p>上記コマンドで表示されたロール名「Cloud9-IoTTwinMakerWorkspaceRole-XXXXX」をテキストにコピーしてください。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ワークスペースの作成①" duration="0">
+        <p>AWS IoT TwinMakerのワークスペースを作成します。</p>
+<p>以下の手順でIoT TwinMakerのマネジメントコンソールに移動します。</p>
+<p>サービスの検索から「IoT Twin」と入力し、IoT TwinMakerを選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\3a891f1ad78c544e"></p>
+<p>AWS IoT TwinMakerの画面から「ワークスペースを作成」を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\2570be71033521"></p>
+<p>ワークスペースの詳細にて、以下を入力します。</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>項目</strong></p>
+</td><td colspan="2" rowspan="1"><p><strong>メモ</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>名前</p>
+</td><td colspan="2" rowspan="1"><p>CookieFactory</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>S3バケット</p>
+</td><td colspan="2" rowspan="1"><p>S3バケットを作成を選択</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>実行ロール</p>
+</td><td colspan="2" rowspan="1"><p>事前にメモしておいたWorkSpaceロールを選択</p>
+</td></tr>
+</table>
+<p>上記を入力し、次へ</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\44175075052e669f"></p>
+<p>ダッシュボードの管理画面になります。</p>
+<p>Amazon Managed Grafanaの設定を事前に行う必要がある為、この画面のまま、</p>
+<p>別のタブでAWS Managed Grafanaのマネジメントコンソールを開きます。</p>
+<p class="image-container"><img style="width: 698.50px" src="img\\29898b87f36f5a98"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Amazon Grafana作成" duration="0">
+        <p>別のタブで開いたサービス検索画面にて「Grafana」と入力し、「Amazon Grafana」を開きます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\38f44dcc46b4bc23"></p>
+<p>「ワークスペースを作成」を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\e0a706a813c80dff"></p>
+<p>「ワークスペースの詳細を指定」にて、ワークスペース名に「 AMGWorkspace 」と入力し、次へを選択。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\6c1c00f4f1cc25ad"></p>
+<p>設定を構成画面にて</p>
+<p>「AWS Single-Sign-On」と「サービスマネージド」を選択し、次へを選択する。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\f441009c0164f1e0"></p>
+<aside class="warning"><p><strong>AWS SSOが有効化されていないアカウントでは、以下のように表示されて次にすすめませんので、指示に従い [ユーザーを作成] を実施してください。</strong></p>
+</aside>
+<p class="image-container"><img style="width: 624.00px" src="img\\43d8b377ec9301d7"></p>
+<p>任意のEメールアドレス、姓名を入力して[ユーザーを作成]を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\450443f7c21c28fa"></p>
+<p>必要情報を入力して[ユーザーを作成]をクリックすると、AWS Single Sign-Onが有効になります。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\cf9cbf234b880ff9"></p>
+<p>登録したEメールアドレスに以下のような承認メールが届いてますので、[Accept Invitation]をクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\32566c191418fe52"></p>
+<p>ブラウザでAWS SSOのサインアップの画面が起動しますので、任意のパスワードを設定してください。</p>
+<p class="image-container"><img style="width: 340.00px" src="img\\e048b3f34e6ac3cd"></p>
+<p>改めてサインインの画面になりますので、ユーザー名(=設定したEメールアドレス)を入力してください。</p>
+<p class="image-container"><img style="width: 337.00px" src="img\\de47e2b49a71f9f7"></p>
+<p>さらに設定したパスワードを入力して[サインイン]をクリックすると、ブラウザで AWS Single Sign-On の画面が起動し有効化されますので、以降は同様の手順ですすめてください。 </p>
+<p class="image-container"><img style="width: 340.00px" src="img\\63e531052f01afee"></p>
+<p>「サービスマネージド型のアクセス許可設定」にて、IAMアクセス許可アクセス設定を「現在のアカウント」が選ばれている事を確認し、次へ。</p>
+<p>※データソースとしてTwinMakerを選択しなくても問題ありません</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\14cc9f30605dc35e"></p>
+<p>ワークスペースを作成をクリックして、作成を行ってください。</p>
+<p class="image-container"><img style="width: 508.86px" src="img\\6a7e795a922091f7"></p>
+<p>作成が完了するまで、少し待ちます。</p>
+<p class="image-container"><img style="width: 701.55px" src="img\\6fd615590f9048dd"></p>
+<p>作成が完了するとステータスがアクティブになります。</p>
+<p>「新しいユーザーまたはグループの割り当て」を選択します。</p>
+<p class="image-container"><img style="width: 709.57px" src="img\\ad729bbfed38a57d"></p>
+<p>ユーザーを選択し、「ユーザーとグループを割り当て」を選択します。</p>
+<p class="image-container"><img style="width: 693.50px" src="img\\f4bfe17b2f74f26e"></p>
+<p>作成したユーザを選択し、「閲覧者」から「管理者」に変更する</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\d11159f526c7970"></p>
+<p>ワークスペースの一覧画面に戻り、認証が「有効」となる事を確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\2b3786fa1600df4c"></p>
+<p>SSOの招待メールが届くので「Accept invitation」を選択します。</p>
+<p>(前のステップで新規ユーザ作成し、AWS SSOの有効化手順でメール認証まで終わっている場合は不要です)</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\7d9b520664e1676f"></p>
+<p>新規ユーザーのサインアップでパスワードを設定する。</p>
+<p class="image-container"><img style="width: 271.97px" src="img\\275a6a7e23e9d746"></p>
+<p>パスワード設定を正常に行い、作成される事を確認します。</p>
+<p>※遷移した画面は閉じてください</p>
+<p class="image-container"><img style="width: 266.82px" src="img\\ed5c55c80a99fc4e"></p>
+<p>Grafanaのワークスペースにログイン出来る事を確認します。</p>
+<p>以下のワークスペースURLにアクセスします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\938588e8c4363160"></p>
+<p>「Sign in with AWS SSO」を選択します。</p>
+<p class="image-container"><img style="width: 438.50px" src="img\\192dc2bce9e5bfe3"></p>
+<p>サインイン画面で、ユーザ名に作成したユーザの「メールアドレス」を入力します。</p>
+<p class="image-container"><img style="width: 290.50px" src="img\\559e39e5eb44b671"></p>
+<p>パスワードを入力し、サインインして下さい。</p>
+<p class="image-container"><img style="width: 257.31px" src="img\\fc57b4f0eabf5699"></p>
+<p>MFAの設定が出た場合はMFAの6桁の数字を入力し、サインインしてください。</p>
+<p class="image-container"><img style="width: 248.50px" src="img\\a88bf8527c383f46"></p>
+<p>MFAの設定が完了し、以下の画面に遷移します。</p>
+<p class="image-container"><img style="width: 394.94px" src="img\\139634e4f85b5916"></p>
+<p>SSOの画面で「Amazon Grafana-ワークスペース名」を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\636373cc54056965"></p>
+<p>Grafanaのダッシュボードを閲覧できることを確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\832c838c9207d270"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="ワークスペースの作成②" duration="0">
+        <p>TwinMakerのダッシュボード作成画面に戻り、更新を押した後、</p>
+<p>Grafanaサービスロール [AmazonGrafanaServiceRole-[ランダム文字列]]を設定して次へ。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\623091af08a85368"></p>
+<p>ダッシュボードロール外部の画面にて、IAMポリシーを作成します。</p>
+<p>[コードのコピー]を実行して、「IAMでポリシーを作成」を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\b976cf446c032ada"></p>
+<p>IAMポリシーの作成画面にて「JSON」を選択し、コピーしたコードを貼り付けます。</p>
+<p class="image-container"><img style="width: 680.50px" src="img\\95959b9d9b1dcdbf"></p>
+<p>次のステップをクリック</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\7ce14661ab0f6f90"></p>
+<p>ポリシーの作成画面にて以下を入力する</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p><strong>項目</strong></p>
+</td><td colspan="2" rowspan="1"><p><strong>メモ</strong></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>名前</p>
+</td><td colspan="2" rowspan="1"><p>CookieFactoryDashboardPolicy</p>
+</td></tr>
+</table>
+<p>を入力し、ポリシーの作成を実施し、タブを閉じます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\a9728094e9d71eea"></p>
+<p>Twin Makerの作成画面に戻り、IAMロールを作成するため、「IAMでダッシュボードロールを作成する」をクリック</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\80dae2e972ee37fb"></p>
+<p>「信頼されたエンティティ」で「ユースケース」で「IoT TwinMaker」を選択し、次へ</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\c7a00e3cda64406c"></p>
+<p>許可ポリシーで「 CookieFactoryDashboardPolicy 」を選択し、次へをクリック</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\3c613c8ed7b10ef4"></p>
+<p>ロール名に「 CookieFactoryDashboardRole  」を入力し、</p>
+<p>「ロールを作成」をクリックし、ウィンドウを閉じる。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\b8466cb84a20fbae"></p>
+<p>Twin Makerのコンソールに戻り、ダッシュボードロールの部分で更新を押して、「 CookieFactoryDashboardRole 」を選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\185dbf516c6fea42"></p>
+<p>ダッシュボードロールポリシーの更新でコードのコピーを実施し、「IAMで信頼ポリシーを更新する」をクリック</p>
+<p class="image-container"><img style="width: 535.50px" src="img\\c53d9974efbbc138"></p>
+<p>信頼ポリシーの編集画面に遷移するので、先ほどコピーしたポリシーを貼り付けて、[[ポリシーを更新]をクリックしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\80ad434ef3eaedb8"></p>
+<p>IoT TwinMakaer の ダッシュボードロール - 外部の画面 に戻り、[次へ] をクリックすると、確認して作成 の画面へ遷移するので [ワークスペースの作成]をクリックします。確認画面で[ワークスペースを作成]をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\1984f438f7c3d9f5"></p>
+<p>ワークスペースが作成されたことを確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\279510ee41273751"></p>
+<p>Grafanaに戻ります。</p>
+<p>Grafanaホームページから、左側のナビゲーションバーで構成（歯車のアイコン）を選択し、[Data sources]を選択します。[Add data source]ボタンを選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\7ebd3dac25afb377"></p>
+<p>[AWS IoT TwinMaker]データソースを選択します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\755ca7f0ba44bcac"></p>
+<p>次に、クレデンシャル設定を入力してプラグインを構成し、ワークスペースを選択できます。</p>
+<p>事前にIoT TwinMakerの「ワークスペースID」をコピーします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\a19d50ed57eba726"></p>
+<p>以下のコマンドをCloud9上で入力し、「ダッシュボードARN」を出力します。</p>
+<p>※&lt;Amazon Managed Grafana Workspace IAM Role ARN&gt;はAmazonGrafanaServiceRole-XXXXXXで作ったIAMロールのARNです。</p>
+<pre><code>python3 $GETTING_STARTED_DIR/src/modules/grafana/create_grafana_dashboard_role.py --account-id $AWS_ACCOUNT_ID --workspace-id $WORKSPACE_ID --region $AWS_DEFAULT_REGION --auth-provider &lt;Amazon Managed Grafana Workspace IAM Role ARN&gt;</code></pre>
+<p>以下のメッセージが出力されるので、「arn～」をコピーします。</p>
+<pre><code>Created IAM role: arn:aws:iam::495911196177:role/Cloud9-IoTTwinMakerDashboardRole-43af3920
+Created the dashboard IAM policy: arn:aws:iam::495911196177:policy/CookieFactoryDashboardPolicy-43af39202a624ce8bebca68c8962c2bb
+Attached CookieFactoryDashboardPolicy-43af39202a624ce8bebca68c8962c2bb to dashboard role.
+Please use this Role ARN when configuring the IoT TwinMaker datasource in Grafana:
+
+arn:aws:iam::123456789123:role/Cloud9-IoTTwinMakerDashboardRole-XXXXX
+</code></pre>
+<p>・Assume Role ARNに上記でコピーした「ダッシュボードARN」を入力</p>
+<p>・TwinMaker settingsのWorkspaceに「ワークスペースID」を入力</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\59469405d965421b"></p>
+<p>Save &amp; Testを実行して、successfullyとなる事を確認します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\f60fcca5b9934da1"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Cluod9上での各種モジュール、データのインストール" duration="0">
+        <p>Cloud9のコンソールに移動し、TimestreamTelemetryモジュールのインスタンスをデプロイします。</p>
+<pre><code>cd $GETTING_STARTED_DIR/src/modules/timestream_telemetry/cdk/</code></pre>
+<p>次のコマンドを使用して、モジュールの依存関係をインストールします</p>
+<pre><code>npm install</code></pre>
+<p>モジュールをデプロイします。（IAMの変更を受け入れるように求められたら、「y」と入力します。）</p>
+<pre><code>cdk deploy</code></pre>
+<p>次のコマンドを使用して、CookieFactoryのコンテンツをインポートします。</p>
+<pre><code>cd $GETTING_STARTED_DIR/src/workspaces/cookiefactory/</code></pre>
+<pre><code>import cookie factory data into your workspace
+python3 -m setup_content \
+  --telemetry-stack-name $TIMESTREAM_TELEMETRY_STACK_NAME \
+  --workspace-id $WORKSPACE_ID \
+  --region-name $AWS_DEFAULT_REGION \
+  --import-all</code></pre>
+<p>インポートが成功すると、IoT TwinMakerのコンソール上にエンティティとシーンが表示されます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\ebdedb2602ac5cdd"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\\cd9b67f7688bcd"></p>
+<p>Grafana のダッシュボードに移動し、CookieFactoryの設定ファイル (JSON ファイル) をインポートします。</p>
+<p>Cloud9 にて、</p>
+<p>次のコマンドを使用して、JSON ファイルを home ディレクトリにコピーします。</p>
+<pre><code>cp -p $GETTING_STARTED_DIR/src/workspaces/cookiefactory/sample_dashboards/mixer_alarms_dashboard.json ~/environment/mixer_alarms_dashboard.json</code></pre>
+<p>エクスプローラーペインにて、mixer_alarms_dashboard.json ファイルを右クリックし、download を選択します。</p>
+<p class="image-container"><img style="width: 452.00px" src="img\\69fab0f2f76e4d5f"></p>
+<p>Grafanaの画面を表示し、左側のペインにある [+] アイコンにマウスオーバーすると、[import] ボタンが表示されるので、クリックします。</p>
+<p class="image-container"><img style="width: 482.00px" src="img\\5366a52f372d17e2"></p>
+<p>[Upload JSON File] ボタンをクリックし、ダウンロードした「mixer_alarms_dashboard.json」ファイルを指定して、Importを押す</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\757eb5a474a0dbd0"></p>
+<p>JSONファイルの内容にしたがってAssetの読み込みが開始されます。</p>
+<p>読み込みが終わると、Secene Viewer と Mixer Viewer にそれぞれ3Dモデルが表示されます。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\51b4f92fde60434e"></p>
+<p>これでIoT TwinMakerのクッキー工場が出来上がりました。</p>
+<p><strong>皆さん、出来上がったクッキー工場の様子を触ってみましょう！</strong></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="環境の削除" duration="0">
+        <p>ハンズオンで作成したリソースを以下の手順で削除します。そのままにしておくと<strong>課金が発生する</strong>ものがあるため確実に作業を実施してください</p>
+<h2 is-upgraded><strong>コマンドによる環境の削除</strong></h2>
+<p>Cloud9 にて次のコマンドを順番に貼り付けてください。</p>
+<h2 is-upgraded>Grafanaダッシュボードの削除</h2>
+<p>Grafana のダッシュボードを削除します。</p>
+<pre><code>python3 $GETTING_STARTED_DIR/src/modules/grafana/cleanup_grafana_dashboard_role.py --workspace-id $WORKSPACE_ID --region $AWS_DEFAULT_REGION</code></pre>
+<h2 is-upgraded>Grafanaのデータソース削除</h2>
+<p>左側のウインドウアイコンにマウスオーバーして、[Browse] をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\61c0e44e0ac472e8"></p>
+<p>[AWS IoT TwinMaker Mixed Alarm Dashboard] のチェックボックスにチェックを入れて、[Delete] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\8ce7813c77341d23"></p>
+<p>確認メッセージが表示されるので、[Delete] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\2bfed4d88b0837cc"></p>
+<p>歯車アイコンをマウスオーバーして、[Data sources] をクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\1d19b75a3ea0ba8d"></p>
+<p>[AWS IoT TwinMaker] をクリックして、</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\356a07423abc241"></p>
+<p>[Delete] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\720e2ab38a4d0a8c"></p>
+<p>確認メッセージが表示されるので、[Delete] ボタンをクリックして削除します。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\84dcb25089452e30"></p>
+<h2 is-upgraded>Grafanaのワークスペースの削除</h2>
+<p>Amazon Managed Grafanaの画面に遷移し、「すべてのワークスペース」を表示します。</p>
+<p>ワークスペースにチェックを入れ、[削除]をクリックして削除してください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\e63b30491a118f28"></p>
+<h2 is-upgraded><strong>IoT TwinMaker 削除</strong></h2>
+<p>以下のコマンドでIoT TwinMakerのコンテンツを削除します。</p>
+<p>※削除が完了するのに非常に時間が掛かる為、ここでも歓談下さい</p>
+<p>ディレクトリを移動して下さい。</p>
+<pre><code>cd $GETTING_STARTED_DIR/src/workspaces/cookiefactory</code></pre>
+<p>以下のコマンドで削除を行います。</p>
+<pre><code>python3 -m setup_content \
+     --telemetry-stack-name $TIMESTREAM_TELEMETRY_STACK_NAME \
+     --workspace-id $WORKSPACE_ID \
+     --region-name $AWS_DEFAULT_REGION \
+     --delete-all \
+     --delete-workspace-role-and-bucket</code></pre>
+<p>※1.時間が掛かりますので、実施後、お手洗いなど休憩時間としてご利用下さい</p>
+<p>※2.タイムアウトした場合は再度上記コマンドを実行してください</p>
+<p>以下のコマンドlでCloiudFormationのスタックを削除してください</p>
+<pre><code>aws cloudformation delete-stack --stack-name $TIMESTREAM_TELEMETRY_STACK_NAME --region $AWS_DEFAULT_REGION &amp;&amp; aws cloudformation wait stack-delete-complete --stack-name $TIMESTREAM_TELEMETRY_STACK_NAME --region $AWS_DEFAULT_REGION</code></pre>
+<p>AWS IoT TwinMaker のコンソールにアクセスしてください。</p>
+<p><a href="https://us-east-1.console.aws.amazon.com/iottwinmaker/home?region=us-east-1#/" target="_blank">https://us-east-1.console.aws.amazon.com/iottwinmaker/home?region=us-east-1#/</a></p>
+<p>削除が成功すると、以下の画像の通りウェルカム画面が表示され、ワークスペース(CookieFactory)は表示されなくなります。</p>
+<p>※削除後もワークスペース(CookieFactory)が表示されている場合はブラウザの再読み込みを実施してください</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\258d01358d0c54dd"></p>
+<h2 is-upgraded>Cloud9の削除</h2>
+<p>Cloud9 のコンソールを開きます。</p>
+<p><a href="https://us-east-1.console.aws.amazon.com/cloud9/home?region=us-east-1" target="_blank">https://us-east-1.console.aws.amazon.com/cloud9/home?region=us-east-1</a></p>
+<p>作成した Cloud9 の Enviroment が選択されている状態で、[Delete] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\cba5b30943109cf7"></p>
+<p>確認メッセージが表示されるので、テキストボックスに「Delete」と入力し、[Delete] ボタンをクリックします。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\e7e97e909d94eedb"></p>
+<h2 is-upgraded>IAM リソースの削除</h2>
+<p>11 個の IAM ロールが作成されているため、まとめて削除してください。</p>
+<p>※ Cloud9 のロールは上記リソースを削除する際にまとめて削除されます。</p>
+<ul>
+<li>cdk-hnb659fds-image-publishing-role-117893839020-us-east-1</li>
+<li>cdk-hnb659fds-lookup-role-117893839020-us-east-1</li>
+<li>cdk-hnb659fds-file-publishing-role-117893839020-us-east-1</li>
+<li>cdk-hnb659fds-cfn-exec-role-117893839020-us-east-1</li>
+<li>cdk-hnb659fds-deploy-role-117893839020-us-east-1</li>
+<li>AmazonGrafanaServiceRole-9Nj49VrCH</li>
+<li>Cloud9-IoTTwinMakerWorkspaceRole-89dcade8DashboardRole</li>
+<li>Cloud9-IoTTwinMakerDashboardRole-ff952553</li>
+<li>CookieFactoryTelemetry-timestreamUdqRoleB0A723F2-1BKLE7J5L9HAY</li>
+<li>CookieFactoryTelemetry-LogRetentionaae0aa3c5b4d4f8-10OS82APF3EOS</li>
+</ul>
+<p>IAM コンソールで、左側のメニューペインから [ロール] をクリックし、[作成時刻] でソートしてから、まとめて削除するとスムーズです。</p>
+<p>※作成時刻が無い方は歯車マークから作成時刻を表示して下さい</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\5d4edd8ef1d590a1"></p>
+<h2 is-upgraded><strong>IAM ポリシーの削除</strong></h2>
+<p>以下の2つのポリシーを削除してください</p>
+<ul>
+<li>Iottwinmaker_development</li>
+<li>CookieFactoryDashboardPolicy</li>
+</ul>
+<p>IAM コンソールにて、左側のメニューペインからポリシーをクリックし、検索ボックスに該当のポリシー名を入力します。[ <strong>ENTER</strong> ] キーを押下すると存在する場合は結果として表示されますから、[ <strong>アクション </strong>] ボタンから削除をしてください。</p>
+<p class="image-container"><img style="width: 624.00px" src="img\\353218fa44a94c2d"></p>
+<p class="image-container"><img style="width: 624.00px" src="img\\76a67824480204cb"></p>
+<h2 is-upgraded>S3バケットの削除</h2>
+<p>ハンズオンの過程で以下のバケットが自動で生成されておりますので、手動で削除が必要です。</p>
+<ul>
+<li>cdk-hnb659fds-assets-[アカウントID]<a href="https://s3.console.aws.amazon.com/s3/buckets/twinmaker-workspace-cloud9-iottwinmakerwo-255729400852-iad-logs?region=us-east-1" target="_blank">-</a>-us-east-1</li>
+</ul>
+<p>※手順の流れで以下も残っている方は手動で削除してください</p>
+<ul>
+<li>tw<a href="https://s3.console.aws.amazon.com/s3/buckets/twinmaker-workspace-cloud9-iottwinmakerwo-255729400852-iad-logs?region=us-east-1" target="_blank">i</a>nmaker-workspace-cloud9-iottwinmakerwo-[アカウントID]<a href="https://s3.console.aws.amazon.com/s3/buckets/twinmaker-workspace-cloud9-iottwinmakerwo-255729400852-iad-logs?region=us-east-1" target="_blank">-</a>iad-logs</li>
+<li>Twinmaker-workspace-cloud9-iottwinmakerworkspa-[アカウントID]<a href="https://s3.console.aws.amazon.com/s3/buckets/twinmaker-workspace-cloud9-iottwinmakerwo-255729400852-iad-logs?region=us-east-1" target="_blank">-</a>-iad</li>
+</ul>
+<p>S3のページでバケットの名前をクリックして、オブジェクトを削除してから、バケットを削除してください。</p>
+<h2 is-upgraded><img style="width: 624.00px" src="img\\98b190683ade9522"></h2>
+<h2 is-upgraded>CloudWatchロググループの削除</h2>
+<p>ハンズオンの過程で以下のロググループが自動で生成されておりますので、手動で削除が必要です。</p>
+<ul>
+<li>/aws/lambda/CokkieFactoryTelemetry-Logxxxxx</li>
+<li>/aws/lambda/CokkieFactoryTelemetry-Timestreamxxxxx</li>
+</ul>
+<p>対象の名前をクリックして、アクション-&gt;ロググループの削除から、ロググループを削除してください。<img style="width: 624.00px" src="img\\de03bcc324f481"></p>
+<h2 is-upgraded><strong>VPCの削除</strong></h2>
+<aside class="warning"><p><strong>課金対象ではないので、リソースを再利用したい方は実施しなくても問題ありません。</strong></p>
+<p><strong>Cloud 9 の削除が完了するまでは、削除できません。</strong></p>
+</aside>
+<ol type="1" start="1">
+<li>左ペインより [<strong>VPC</strong>] を選択します。</li>
+<li>作成した VPC を選択して、[<strong>アクション</strong>] から [<strong>VPCの削除</strong>] を選択します。</li>
+<li>VPC 内にあるセキュリティグループ、サブネット、ルートテーブル、インターゲットウェイが同時削除対象として表示されます。</li>
+<li>削除して問題なければ入力ボックスに [<strong>削除</strong>] と入力してから右下の [<strong>削除</strong>] をクリックして実行してください。</li>
+</ol>
+<p class="image-container"><img style="width: 624.00px" src="img\\58d01d326e9baedc"></p>
+<p>以上です。<br>ハンズオン実施おつかれさまでした。</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
